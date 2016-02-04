@@ -1,0 +1,36 @@
+#cloud-config
+
+---
+coreos:
+  update:
+    reboot-strategy: 'off'
+  etcd2:
+    advertise-client-urls: http://$private_ipv4:2379
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    listen-client-urls: http://0.0.0.0:2379
+    listen-peer-urls: http://$private_ipv4:2380
+    election-timeout: 5000
+    discovery:
+  fleet:
+    etcd_servers: http://$private_ipv4:2379
+  units:
+  - name: etcd2.service
+    command: start
+  - name: fleet.service
+    command: start
+write_files:
+- path: /etc/systemd/system/yochu.service
+  permissions: 420
+  owner: root
+  content: |
+    [Unit]
+    Before=multi-user.target
+    [Service]
+    Type=oneshot
+    ExecStartPre=/usr/bin/mkdir -p /home/core/bin
+    ExecStartPre=-/usr/bin/mv /home/core/yochu /home/core/bin/yochu
+    ExecStartPre=/usr/bin/chmod +x /home/core/bin/yochu
+    ExecStart=/home/core/bin/yochu setup -v -d --start-daemons=true --subnet=$private_ipv4/24 --docker-subnet=10.1.42.1/16
+    RemainAfterExit=yes
+    [Install]
+    WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -s {{.DockerSubnet}} ! -d {{.DockerSubnet}} -j MASQUERADE
+COMMIT
+
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+:DOCKER - [0:0]
+-A INPUT -i lo -j ACCEPT
+-A INPUT -d {{.Subnet}} ! -i docker0 -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+# docker containers may talk to the gateway, but to nothing else on the host-network
+-A FORWARD -s {{.DockerSubnet}} -d {{.Gateway}} -j ACCEPT
+-A FORWARD -s {{.DockerSubnet}} -d {{.Subnet}} -j DROP
+-A FORWARD -s {{.DockerSubnet}} ! -o docker0 -j ACCEPT
+-A FORWARD -o docker0 -j DOCKER
+-A OUTPUT -j ACCEPT
+COMMIT

@@ -1,0 +1,21 @@
+[Unit]
+Description=Custom Fleet daemon
+
+Wants=etcd2.service
+After=etcd2.service
+
+Wants=fleet.socket
+After=fleet.socket
+
+Requires=usr-bin.mount
+After=usr-bin.mount
+
+[Service]
+Environment="FLEET_ETCD_REQUEST_TIMEOUT=5" "FLEET_VERBOSITY=0"
+Nice=-10
+ExecStart=/usr/bin/fleetd
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

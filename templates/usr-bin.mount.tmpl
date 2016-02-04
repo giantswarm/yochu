@@ -1,0 +1,16 @@
+[Unit]
+Description=Giantswarm Distribution Mount to /usr/bin
+
+Before=etcd2.service fleet.service docker.service
+
+Wants=yochu.service
+
+[Mount]
+What=overlay
+Where={{.MountPoint}}
+Type=overlay
+Options=lowerdir=/usr/bin,upperdir={{.OverlayUpperdir}},workdir={{.OverlayWorkdir}}
+
+[Install]
+RequiredBy=etcd2.service fleet.service docker.service
+WantedBy=multi-user.target umount.target

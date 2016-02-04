@@ -1,0 +1,21 @@
+[Unit]
+Description=Docker Application Container Engine
+
+Requires=docker.socket
+After=docker.socket
+
+Requires=docker-tcp.socket
+After=docker-tcp.socket
+
+Requires=usr-bin.mount
+After=usr-bin.mount
+
+[Service]
+Environment="TMPDIR=/var/tmp/"
+ExecStartPre=/bin/mount --make-rprivate /
+LimitNOFILE=1048576
+LimitNPROC=1048576
+ExecStart=/usr/bin/docker -d {{range $index, $registry := .PrivateRegistry}}--insecure-registry={{$registry}} {{end}}--iptables={{.UseIPTables}} -s {{.StorageEngine}} --host=fd://
+
+[Install]
+WantedBy=multi-user.target

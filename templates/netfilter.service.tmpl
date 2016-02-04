@@ -1,0 +1,9 @@
+[Unit]
+Description=Enable bridge-netfilter for Linux kernel 3.18-rc1 or higher
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash -c "/usr/sbin/lsmod | grep '^br_netfilter' || /sbin/modprobe br_netfilter; echo 'enabled br_netfilter'"
+
+[Install]
+WantedBy=multi-user.target

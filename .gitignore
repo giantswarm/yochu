@@ -1,0 +1,4 @@
+.gobuild
+yochu
+templates/templates_bindata.go
+tests/integration/.vagrant/
