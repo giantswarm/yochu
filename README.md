@@ -1,6 +1,6 @@
 # Yochu
 
-{CI BADGE} [![](https://godoc.org/github.com/giantswarm/yochu?status.svg)](http://godoc.org/github.com/giantswarm/yochu) [![](https://img.shields.io/docker/pulls/giantswarm/yochu.svg)](http://hub.docker.com/giantswarm/yochu) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
+{CI BADGE} [![](https://godoc.org/github.com/giantswarm/yochu?status.svg)](http://godoc.org/github.com/giantswarm/yochu) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
 
 `yochu` provisions already running CoreOS hosts with Docker, `etcd`, `fleet` and `iptables`.
 
@@ -43,10 +43,6 @@ Our custom binaries can be found at:
 - etcdctl: https://downloads.giantswarm.io/etcd/v2.1.0-gs-1/etcdctl
 - fleet: https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetd
 - fleetctl: https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetctl
-
-## Future Development
-
-- Future directions/vision
 
 ## Contact
 
