@@ -46,7 +46,7 @@ Our custom binaries can be found at:
 
 ## Contact
 
-- Mailing list: [giantswarm](https://groups.google.com/forum/!forum/giantswarm)
+- Mailing list: [giantswarm](https://groups.google.com/forum/#!forum/giantswarm)
 - IRC: #[giantswarm](irc://irc.freenode.org:6667/#giantswarm) on freenode.org
 - Bugs: [issues](https://github.com/giantswarm/yochu/issues)
 
