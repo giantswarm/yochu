@@ -1,20 +1,68 @@
 # Yochu
 
-`yochu` provisions already running hosts with docker, etcd, fleet, iptables ... settings.
+{CI BADGE} [![](https://godoc.org/github.com/giantswarm/yochu?status.svg)](http://godoc.org/github.com/giantswarm/yochu) [![](https://img.shields.io/docker/pulls/giantswarm/yochu.svg)](http://hub.docker.com/giantswarm/yochu) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
 
-Hosts are launched with [giantswarm/primer](http://giantswarm/primer) for an AWS cluster.
+`yochu` provisions already running CoreOS hosts with Docker, `etcd`, `fleet` and `iptables`.
 
-Hosts operating system are provisioned with [giantswarm/mayu](http://github.com/giantswarm/mayu) for a bare metal clusters.
+Host operating systems are provisioned with [giantswarm/mayu](http://github.com/giantswarm/mayu) on bare metal clusters.
 
-## Releasing
+## Getting Yochu
 
+Download the latest binary: https://downloads.giantswarm.io/yochu/0.17.0/yochu
+
+Clone the git repository: `git@github.com:giantswarm/yochu.git`
+
+## Running Yochu
+
+Place the following unit file in your cloud-config, replacing your subnet and docker subnets:
 ```
-builder release minor -p
-git checkout <new tag>
-make publish
+[Unit]
+Description=Giant Swarm Yochu
+Wants=network-online.target
+After=network-online.target
+Before=multi-user.target
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/mkdir -p /home/core/bin
+ExecStartPre=/usr/bin/wget --no-verbose https://downloads.giantswarm.io/yochu/0.17.0/yochu -O /home/core/bin/yochu
+ExecStartPre=/usr/bin/chmod +x /home/core/bin/yochu
+ExecStart=/home/core/bin/yochu setup -v -d --start-daemons=true --subnet=<your subnet> --docker-subnet=<your docker subnet> --http-endpoint=https://downloads.giantswarm.io --fleet-version=v0.11.3-gs-2 --etcd-version=v2.1.0-gs-1
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
 ```
 
-## Custom etcd and fleet binaries:
+## Further Steps
+
+Check more detailed documentation: [docs](docs)
+
+Check code documentation: [godoc](https://godoc.org/github.com/giantswarm/yochu)
+
 Our custom binaries can be found at:
-etcd: https://downloads.giantswarm.io/etcd/v2.1.0-gs-1/etcd, https://downloads.giantswarm.io/etcd/v2.1.0-gs-1/etcdctl
-fleet: https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetd, https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetctl
+- etcd: https://downloads.giantswarm.io/etcd/v2.1.0-gs-1/etcd
+- etcdctl: https://downloads.giantswarm.io/etcd/v2.1.0-gs-1/etcdctl
+- fleet: https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetd
+- fleetctl: https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetctl
+
+## Future Development
+
+- Future directions/vision
+
+## Contact
+
+- Mailing list: [giantswarm](https://groups.google.com/forum/!forum/giantswarm)
+- IRC: #[giantswarm](irc://irc.freenode.org:6667/#giantswarm) on freenode.org
+- Bugs: [issues](https://github.com/giantswarm/yochu/issues)
+
+## Contributing & Reporting Bugs
+
+See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches, the
+contribution workflow as well as reporting bugs.
+
+## License
+
+Yochu is under the Apache 2.0 license. See the [LICENSE](LICENSE) file for details.
+
+## Origin of the Name
+
+`yochu` (ようちゅう[幼虫] pronounced "yo-choo") is Japanese for larva or chrysalis.

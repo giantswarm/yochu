@@ -94,3 +94,10 @@ godoc:
 	-p 6060:6060 \
 	golang:1.5 \
 	  godoc -http=:6060 -goroot=/usr/code/.gobuild
+	  
+bin-dist: all
+	mkdir -p bin-dist/
+	cp -f README.md bin-dist/
+	cp -f LICENSE bin-dist/
+	cp $(PROJECT) bin-dist/
+	cd bin-dist/ && tar czf $(PROJECT).$(VERSION).tar.gz *
