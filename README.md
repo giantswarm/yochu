@@ -1,6 +1,6 @@
 # Yochu
 
-{CI BADGE} [![](https://godoc.org/github.com/giantswarm/yochu?status.svg)](http://godoc.org/github.com/giantswarm/yochu) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
+[![Build Status](https://api.travis-ci.org/giantswarm/yochu.svg)](https://travis-ci.org/giantswarm/yochu) [![](https://godoc.org/github.com/giantswarm/yochu?status.svg)](http://godoc.org/github.com/giantswarm/yochu) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
 
 `yochu` provisions already running CoreOS hosts with Docker, `etcd`, `fleet` and `iptables`.
 
