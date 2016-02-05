@@ -8,7 +8,7 @@ Host operating systems are provisioned with [giantswarm/mayu](http://github.com/
 
 ## Getting Yochu
 
-Download the latest binary: https://downloads.giantswarm.io/yochu/0.17.0/yochu
+Download the latest binary: https://downloads.giantswarm.io/yochu/0.18.0/yochu
 
 Clone the git repository: `git@github.com:giantswarm/yochu.git`
 
@@ -24,7 +24,7 @@ Before=multi-user.target
 [Service]
 Type=oneshot
 ExecStartPre=/usr/bin/mkdir -p /home/core/bin
-ExecStartPre=/usr/bin/wget --no-verbose https://downloads.giantswarm.io/yochu/0.17.0/yochu -O /home/core/bin/yochu
+ExecStartPre=/usr/bin/wget --no-verbose https://downloads.giantswarm.io/yochu/0.18.0/yochu -O /home/core/bin/yochu
 ExecStartPre=/usr/bin/chmod +x /home/core/bin/yochu
 ExecStart=/home/core/bin/yochu setup -v -d --start-daemons=true --subnet=<your subnet> --docker-subnet=<your docker subnet> --http-endpoint=https://downloads.giantswarm.io --fleet-version=v0.11.3-gs-2 --etcd-version=v2.1.0-gs-1
 RemainAfterExit=yes
