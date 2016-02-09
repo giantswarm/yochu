@@ -29,42 +29,42 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClie
 
 	fleetdRaw, err := fc.Get("fleet/" + fleetVersion + "/fleetd")
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(distributionPath+"/fleet", fleetdRaw, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Symlink(distributionPath+"/fleet", distributionPath+"/fleetd"); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	fleetctlRaw, err := fc.Get("fleet/" + fleetVersion + "/fleetctl")
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(distributionPath+"/fleetctl", fleetctlRaw, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	fleetServiceRaw, err := templates.Asset(fleetServiceTemplate)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(fleetServicePath, fleetServiceRaw, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if startDaemon {
 		if err := sc.Start(fleetServiceName); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
@@ -76,29 +76,29 @@ func Teardown(fsc *fs.FsClient, sc *systemd.SystemdClient, distributionPath stri
 
 	exists, err := sc.Exists(fleetServiceName)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if exists && stopDaemon {
 		if err := sc.Stop(fleetServiceName); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
 	if err := fsc.Remove(distributionPath + "/fleet"); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Remove(distributionPath + "/fleetd"); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Remove(distributionPath + "/fleetctl"); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil

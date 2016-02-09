@@ -27,7 +27,7 @@ func init() {
 func iptablesRulesRun(cmd *cobra.Command, args []string) {
 	b, err := iptables.RenderRulesFromTemplate(subnet, dockerSubnet, gateway)
 	if err != nil {
-		ExitStderr(Mask(err))
+		ExitStderr(mask(err))
 	}
 
 	Stdoutf(string(b))

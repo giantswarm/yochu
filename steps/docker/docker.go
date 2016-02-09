@@ -51,37 +51,37 @@ func Setup(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, fc fetchclient.Fet
 
 	dockerRaw, err := fc.Get("docker/" + dockerVersion + "/docker")
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(distributionPath+"/docker", dockerRaw, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	err = createDockerService(fsc, privateRegistry, useIPTables)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	dockerTcpSocket, err := templates.Asset(socketTemplate)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	// write docker-tcp.socket unit to host
 	if err := fsc.Write(socketPath, dockerTcpSocket, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	// reload unit files, that is, `systemctl daemon-reload`
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if restartDaemon {
 		// start docker-tcp.socket unit
 		if err := sc.Start(socketName); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 
 		// start docker.service unit
@@ -93,7 +93,7 @@ func Setup(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, fc fetchclient.Fet
 			if systemdPkg.IsJobDependency(err) {
 				vLogger(err.Error())
 			} else {
-				return Mask(err)
+				return maskAny(err)
 			}
 		}
 	}
@@ -115,11 +115,11 @@ func createDockerService(fsc *fsPkg.FsClient, privateRegistry []string, useIPTab
 
 	b, err := templates.Render(serviceTemplate, opts)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(servicePath, b.Bytes(), fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
@@ -163,7 +163,7 @@ func Teardown(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, stopDaemon bool
 	for _, s := range services {
 		exists, err := sc.Exists(s)
 		if err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 
 		if !exists || !stopDaemon {
@@ -171,19 +171,19 @@ func Teardown(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, stopDaemon bool
 		}
 
 		if err := sc.Stop(s); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
 	for _, p := range paths {
 		if err := fsc.Remove(p); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
 	// reload unit files, that is, `systemctl daemon-reload`
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil

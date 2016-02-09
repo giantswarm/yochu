@@ -11,7 +11,6 @@ var vLogger = func(f string, v ...interface{}) {}
 
 const waitJobExecution = 60 * time.Second
 
-
 // Configure sets the logger for this package.
 func Configure(vl func(f string, v ...interface{})) {
 	vLogger = vl
@@ -33,11 +32,11 @@ func (sdc *SystemdClient) Reload() error {
 
 	conn, err := systemdPkg.New()
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := conn.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
@@ -50,12 +49,12 @@ func (sdc *SystemdClient) Start(unit string) error {
 
 	conn, err := systemdPkg.New()
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	strChan := make(chan string, 1)
 	if _, err := conn.StartUnit(unit, "replace", strChan); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	select {
@@ -64,23 +63,23 @@ func (sdc *SystemdClient) Start(unit string) error {
 		case "done":
 			return nil
 		case "canceled":
-			return Mask(JobCanceledError)
+			return maskAny(JobCanceledError)
 		case "timeout":
-			return Mask(JobTimeoutError)
+			return maskAny(JobTimeoutError)
 		case "failed":
 			// We need a start considered to be failed, when the unit is already running.
 			return nil
 		case "dependency":
-			return Mask(JobDependencyError)
+			return maskAny(JobDependencyError)
 		case "skipped":
-			return Mask(JobSkippedError)
+			return maskAny(JobSkippedError)
 		default:
 			// that should never happen
 			vLogger("  unexpected systemd response: '%s'", res)
-			return Mask(UnknownSystemdResponseError)
+			return maskAny(UnknownSystemdResponseError)
 		}
 	case <-timeoutJobExecution():
-		return Mask(JobExecutionTookTooLongError)
+		return maskAny(JobExecutionTookTooLongError)
 	}
 
 	return nil
@@ -93,12 +92,12 @@ func (sdc *SystemdClient) Stop(unit string) error {
 
 	conn, err := systemdPkg.New()
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	strChan := make(chan string, 1)
 	if _, err := conn.StopUnit(unit, "replace", strChan); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	select {
@@ -111,20 +110,20 @@ func (sdc *SystemdClient) Stop(unit string) error {
 			// it is stopped, so all good.
 			return nil
 		case "timeout":
-			return Mask(JobTimeoutError)
+			return maskAny(JobTimeoutError)
 		case "failed":
-			return Mask(JobFailedError)
+			return maskAny(JobFailedError)
 		case "dependency":
-			return Mask(JobDependencyError)
+			return maskAny(JobDependencyError)
 		case "skipped":
-			return Mask(JobSkippedError)
+			return maskAny(JobSkippedError)
 		default:
 			// that should never happen
 			vLogger("  unexpected systemd response: '%s'", res)
-			return Mask(UnknownSystemdResponseError)
+			return maskAny(UnknownSystemdResponseError)
 		}
 	case <-timeoutJobExecution():
-		return Mask(JobExecutionTookTooLongError)
+		return maskAny(JobExecutionTookTooLongError)
 	}
 
 	return nil
@@ -136,12 +135,12 @@ func (sdc *SystemdClient) Exists(unit string) (bool, error) {
 
 	conn, err := systemdPkg.New()
 	if err != nil {
-		return false, Mask(err)
+		return false, maskAny(err)
 	}
 
 	ustates, err := conn.ListUnits()
 	if err != nil {
-		return false, Mask(err)
+		return false, maskAny(err)
 	}
 
 	for _, ustate := range ustates {

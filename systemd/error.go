@@ -14,7 +14,7 @@ var (
 	JobExecutionTookTooLongError = errgo.New("job execution took too long")
 	UnknownSystemdResponseError  = errgo.New("received unknown systemd response")
 
-	Mask = errgo.MaskFunc(errgo.Any)
+	maskAny = errgo.MaskFunc(errgo.Any)
 )
 
 // IsJobDependency returns true if the given err is a JobDependencyError.

@@ -77,7 +77,7 @@ func (s3c *S3Client) Get(key string) ([]byte, error) {
 
 	raw, err := s3c.bucket.Get(key)
 	if err != nil {
-		return nil, Mask(err)
+		return nil, mask(err)
 	}
 
 	return raw, nil

@@ -26,7 +26,7 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, distributionPath, overla
 	vLogger("\n# call overlay.Setup()")
 
 	if err := fsc.MkdirAll(overlayWorkdir, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	opts := struct {
@@ -41,19 +41,19 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, distributionPath, overla
 
 	b, err := templates.Render(overlayMountTemplate, opts)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(overlayMountPath, b.Bytes(), fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Start(overlayMount); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
@@ -64,25 +64,25 @@ func Teardown(fsc *fs.FsClient, sc *systemd.SystemdClient, distributionPath, ove
 
 	exists, err := sc.Exists(overlayMount)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if exists {
 		if err := sc.Stop(overlayMount); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
 	if err := fsc.Remove(overlayMountPath); err != nil && !fs.IsNotExist(err) {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Remove(overlayWorkdir); err != nil && !fs.IsNotExist(err) {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil

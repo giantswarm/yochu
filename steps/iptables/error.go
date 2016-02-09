@@ -5,5 +5,5 @@ import (
 )
 
 var (
-	Mask = errgo.MaskFunc()
+	maskAny = errgo.MaskFunc(errgo.Any)
 )

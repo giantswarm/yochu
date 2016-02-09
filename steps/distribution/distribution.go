@@ -20,7 +20,7 @@ func Setup(fsc *fs.FsClient, distributionPath string) error {
 	vLogger("\n# call distribution.Setup()")
 
 	if err := fsc.MkdirAll(distributionPath, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
@@ -30,7 +30,7 @@ func Teardown(fsc *fs.FsClient, distributionPath string) error {
 	vLogger("\n# call distribution.Teardown()")
 
 	if err := fsc.Remove(distributionPath); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil

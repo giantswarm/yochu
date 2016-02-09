@@ -88,46 +88,46 @@ func init() {
 func setupRun(cmd *cobra.Command, args []string) {
 	fsClient, err := fs.NewFsClient()
 	if err != nil {
-		ExitStderr(Mask(err))
+		ExitStderr(mask(err))
 	}
 
 	systemdClient, err := systemd.NewSystemdClient()
 	if err != nil {
-		ExitStderr(Mask(err))
+		ExitStderr(mask(err))
 	}
 
 	var fetchClient fetchclient.FetchClient
 	if awsAccessKey == "" || awsSecretKey == "" {
 		fetchClient, err = httpclient.NewHTTPClient(httpEndpoint)
 		if err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	} else {
 		fetchClient, err = s3.NewS3Client(awsAccessKey, awsSecretKey, s3Endpoint, s3Bucket)
 		if err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 
 	// distribution service
 	if execute(globalFlags.steps, "distribution") {
 		if err := distribution.Teardown(fsClient, distributionPath); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 
 		if err := distribution.Setup(fsClient, distributionPath); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 
 	// overlay mount service
 	if execute(globalFlags.steps, "overlay") {
 		if err := overlay.Teardown(fsClient, systemdClient, distributionPath, overlayWorkdir, overlayMountPoint); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 
 		if err := overlay.Setup(fsClient, systemdClient, distributionPath, overlayWorkdir, overlayMountPoint); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 
@@ -135,11 +135,11 @@ func setupRun(cmd *cobra.Command, args []string) {
 	useIPTables := execute(globalFlags.steps, "iptables")
 	if useIPTables {
 		if err := iptables.Teardown(fsClient, systemdClient); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 
 		if err := iptables.Setup(fsClient, systemdClient, subnet, dockerSubnet, gateway); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 
@@ -147,46 +147,46 @@ func setupRun(cmd *cobra.Command, args []string) {
 	useIP6Tables := execute(globalFlags.steps, "ip6tables")
 	if useIP6Tables {
 		if err := ip6tables.Teardown(fsClient, systemdClient); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 
 		if err := ip6tables.Setup(fsClient, systemdClient); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 
 	// docker service
 	if execute(globalFlags.steps, "docker") {
 		if err := docker.Teardown(fsClient, systemdClient, stopDaemons); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 
 		// !useIPTables is used, because when the iptables step is enabled, we want
 		// --iptables=false for the docker daemon.
 		if err := docker.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, dockerVersion, privateRegistry, !useIPTables, startDaemons); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 
 	// fleet service
 	if execute(globalFlags.steps, "fleet") {
 		if err := fleet.Teardown(fsClient, systemdClient, overlayMountPoint, stopDaemons); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 
 		if err := fleet.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, fleetVersion, startDaemons); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 
 	// etcd service
 	if execute(globalFlags.steps, "etcd") {
 		if err := etcd.Teardown(fsClient, systemdClient, overlayMountPoint, stopDaemons); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 
 		if err := etcd.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, etcdVersion, startDaemons); err != nil {
-			ExitStderr(Mask(err))
+			ExitStderr(mask(err))
 		}
 	}
 }
