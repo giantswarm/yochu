@@ -42,24 +42,24 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, subnet, dockerSubnet, ga
 	vLogger("\n# call iptables.Setup()")
 
 	if err := setupNetfilter(fsc); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := setupRules(fsc, subnet, dockerSubnet, gateway); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := setupService(fsc); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	for _, s := range services {
 		if err := sc.Start(s); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
@@ -75,7 +75,7 @@ func RenderRulesFromTemplate(subnet, dockerSubnet, gateway string) ([]byte, erro
 
 	b, err := templates.Render(rulesTemplate, opts)
 	if err != nil {
-		return nil, Mask(err)
+		return nil, maskAny(err)
 	}
 	return b.Bytes(), nil
 }
@@ -86,7 +86,7 @@ func Teardown(fsc *fs.FsClient, sc *systemd.SystemdClient) error {
 	for _, s := range services {
 		exists, err := sc.Exists(s)
 		if err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 
 		if !exists {
@@ -94,18 +94,18 @@ func Teardown(fsc *fs.FsClient, sc *systemd.SystemdClient) error {
 		}
 
 		if err := sc.Stop(s); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
 	for _, p := range paths {
 		if err := fsc.Remove(p); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
@@ -114,11 +114,11 @@ func Teardown(fsc *fs.FsClient, sc *systemd.SystemdClient) error {
 func setupNetfilter(fsc *fs.FsClient) error {
 	netfilterService, err := templates.Asset(netfilterTemplate)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(netfilterPath, netfilterService, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
@@ -127,11 +127,11 @@ func setupNetfilter(fsc *fs.FsClient) error {
 func setupRules(fsc *fs.FsClient, subnet, dockerSubnet, gateway string) error {
 	rulesBytes, err := RenderRulesFromTemplate(subnet, dockerSubnet, gateway)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(rulesPath, rulesBytes, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
@@ -140,11 +140,11 @@ func setupRules(fsc *fs.FsClient, subnet, dockerSubnet, gateway string) error {
 func setupService(fsc *fs.FsClient) error {
 	iptablesService, err := templates.Asset(serviceTemplate)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(servicePath, iptablesService, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil

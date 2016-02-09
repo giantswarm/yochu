@@ -29,11 +29,11 @@ func (fsc *FsClient) Write(destination string, raw []byte, perm os.FileMode) err
 
 	parent := path.Dir(destination)
 	if err := os.MkdirAll(parent, perm); err != nil && !os.IsExist(err) {
-		return Mask(err)
+		return mask(err)
 	}
 
 	if err := ioutil.WriteFile(destination, raw, perm); err != nil {
-		return Mask(err)
+		return mask(err)
 	}
 
 	return nil
@@ -44,7 +44,7 @@ func (fsc *FsClient) MkdirAll(path string, perm os.FileMode) error {
 	vLogger("  call FsClient.MkdirAll(path, perm): %s", path)
 
 	if err := os.MkdirAll(path, perm); err != nil {
-		return Mask(err)
+		return mask(err)
 	}
 
 	return nil
@@ -55,7 +55,7 @@ func (fsc *FsClient) Symlink(oldname, newname string) error {
 	vLogger("  call FsClient.Symlink(oldname, newname): %s, %s", oldname, newname)
 
 	if err := os.Symlink(oldname, newname); err != nil {
-		return Mask(err)
+		return mask(err)
 	}
 
 	return nil
@@ -67,7 +67,7 @@ func (fsc *FsClient) Remove(destination string) error {
 	vLogger("  call FsClient.Remove(path): %s", destination)
 
 	if err := os.RemoveAll(destination); err != nil {
-		return Mask(err)
+		return mask(err)
 	}
 
 	return nil

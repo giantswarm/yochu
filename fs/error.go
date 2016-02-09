@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	Mask = errgo.MaskFunc()
+	mask = errgo.MaskFunc()
 )
 
 func IsNotExist(err error) bool {

@@ -18,7 +18,7 @@ var (
 func ip6tablesRulesRun(cmd *cobra.Command, args []string) {
 	b, err := ip6tables.RenderRulesFromTemplate()
 	if err != nil {
-		ExitStderr(Mask(err))
+		ExitStderr(mask(err))
 	}
 
 	Stdoutf("%s", string(b))

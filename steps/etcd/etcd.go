@@ -29,38 +29,38 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClie
 
 	etcdRaw, err := fc.Get("etcd/" + etcdVersion + "/etcd")
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(distributionPath+"/etcd2", etcdRaw, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	etcdctlRaw, err := fc.Get("etcd/" + etcdVersion + "/etcdctl")
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(distributionPath+"/etcdctl", etcdctlRaw, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	etcdServiceRaw, err := templates.Asset(etcdServiceTemplate)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := fsc.Write(etcdServicePath, etcdServiceRaw, fileMode); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if startDaemon {
 		if err := sc.Start(etcdServiceName); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
@@ -72,21 +72,21 @@ func Teardown(fsc *fs.FsClient, sc *systemd.SystemdClient, distributionPath stri
 
 	exists, err := sc.Exists(etcdServiceName)
 	if err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if exists && stopDaemon {
 		if err := sc.Stop(etcdServiceName); err != nil {
-			return Mask(err)
+			return maskAny(err)
 		}
 	}
 
 	if err := fsc.Remove(distributionPath + "/etcd2"); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	if err := sc.Reload(); err != nil {
-		return Mask(err)
+		return maskAny(err)
 	}
 
 	return nil
