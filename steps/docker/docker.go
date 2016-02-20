@@ -16,10 +16,16 @@ type dockerOptions struct {
 	PrivateRegistry []string
 	StorageEngine   string
 	UseIPTables     bool
+	UseTypeNotify   bool
+	DockerExecArgs  []string
 }
 
 const (
 	dockerFolder = "/var/lib/docker"
+
+	dockerDaemonV1_10Arg = "daemon"
+	dockerDaemonArg      = "-d"
+	dockerIccEnabledArg  = "--icc=true"
 
 	btrfsFilesystemType   = "btrfs"
 	overlayFilesystemType = "overlay"
@@ -40,6 +46,8 @@ var (
 	fileMode = os.FileMode(0755)
 	services = []string{serviceName, socketName}
 	paths    = []string{servicePath, socketPath}
+
+	dockerExecDriverOptsArgs = []string{"--exec-opt", "native.cgroupdriver=cgroupfs"}
 )
 
 func Configure(vl func(f string, v ...interface{})) {
@@ -58,7 +66,7 @@ func Setup(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, fc fetchclient.Fet
 		return maskAny(err)
 	}
 
-	err = createDockerService(fsc, privateRegistry, useIPTables)
+	err = createDockerService(fsc, dockerVersion, privateRegistry, useIPTables)
 	if err != nil {
 		return maskAny(err)
 	}
@@ -106,12 +114,16 @@ func Split(s string, d string) (lst []string) {
 	return
 }
 
-func createDockerService(fsc *fsPkg.FsClient, privateRegistry []string, useIPTables bool) error {
+func createDockerService(fsc *fsPkg.FsClient, dockerVersion string, privateRegistry []string, useIPTables bool) error {
 	opts := dockerOptions{
 		PrivateRegistry: privateRegistry,
 		StorageEngine:   getStorageEngine(dockerFolder),
 		UseIPTables:     useIPTables,
+		DockerExecArgs:  make([]string, 0),
 	}
+
+	options := addVersionSpecificArguments(&opts, dockerVersion)
+	opts = *options
 
 	b, err := templates.Render(serviceTemplate, opts)
 	if err != nil {
@@ -123,6 +135,21 @@ func createDockerService(fsc *fsPkg.FsClient, privateRegistry []string, useIPTab
 	}
 
 	return nil
+}
+
+func addVersionSpecificArguments(opts *dockerOptions, dockerVersion string) *dockerOptions {
+	opts.DockerExecArgs = append(opts.DockerExecArgs, dockerDaemonArg)
+
+	if strings.Compare(dockerVersion, "1.9") >= 0 {
+		opts.UseTypeNotify = true
+		if strings.Compare(dockerVersion, "1.10") >= 0 {
+			opts.DockerExecArgs = append(opts.DockerExecArgs, dockerDaemonV1_10Arg)
+			opts.DockerExecArgs = append(opts.DockerExecArgs[:0], opts.DockerExecArgs[1:]...)
+		}
+		opts.DockerExecArgs = append(opts.DockerExecArgs, dockerIccEnabledArg)
+		opts.DockerExecArgs = append(opts.DockerExecArgs, dockerExecDriverOptsArgs...)
+	}
+	return opts
 }
 
 func getStorageEngine(path string) string {
