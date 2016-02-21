@@ -140,9 +140,9 @@ func createDockerService(fsc *fsPkg.FsClient, dockerVersion string, privateRegis
 func addVersionSpecificArguments(opts *dockerOptions, dockerVersion string) *dockerOptions {
 	opts.DockerExecArgs = append(opts.DockerExecArgs, dockerDaemonArg)
 
-	if strings.Compare(dockerVersion, "1.9") >= 0 {
+	if normalizeVersion(dockerVersion) >= normalizeVersion("1.9") {
 		opts.UseTypeNotify = true
-		if strings.Compare(dockerVersion, "1.10") >= 0 {
+		if normalizeVersion(dockerVersion) >= normalizeVersion("1.10") {
 			opts.DockerExecArgs = append(opts.DockerExecArgs, dockerDaemonV1_10Arg)
 			opts.DockerExecArgs = append(opts.DockerExecArgs[:0], opts.DockerExecArgs[1:]...)
 		}
@@ -214,4 +214,32 @@ func Teardown(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, stopDaemon bool
 	}
 
 	return nil
+}
+
+func normalizeVersion(version string) string {
+	const maxByte = 1<<8 - 1
+	vo := make([]byte, 0, len(version)+8)
+	j := -1
+	for i := 0; i < len(version); i++ {
+		b := version[i]
+		if '0' > b || b > '9' {
+			vo = append(vo, b)
+			j = -1
+			continue
+		}
+		if j == -1 {
+			vo = append(vo, 0x00)
+			j = len(vo) - 1
+		}
+		if vo[j] == 1 && vo[j+1] == '0' {
+			vo[j+1] = b
+			continue
+		}
+		if vo[j]+1 > maxByte {
+			vLogger("unable to normalize this version")
+		}
+		vo = append(vo, b)
+		vo[j]++
+	}
+	return string(vo)
 }
