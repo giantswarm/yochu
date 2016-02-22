@@ -11,11 +11,12 @@ Requires=usr-bin.mount
 After=usr-bin.mount
 
 [Service]
+{{if .UseTypeNotify}}Type=Notify{{end}}
 Environment="TMPDIR=/var/tmp/"
 ExecStartPre=/bin/mount --make-rprivate /
 LimitNOFILE=1048576
 LimitNPROC=1048576
-ExecStart=/usr/bin/docker daemon {{range $index, $registry := .PrivateRegistry}}--insecure-registry={{$registry}} {{end}}--iptables={{.UseIPTables}} -s {{.StorageEngine}} --host=fd://
+ExecStart=/usr/bin/docker {{range $index, $arg := .DockerExecArgs}}{{$arg}} {{end}} {{range $index, $registry := .PrivateRegistry}}--insecure-registry={{$registry}} {{end}}--iptables={{.UseIPTables}} -s {{.StorageEngine}} --host=fd://
 
 [Install]
 WantedBy=multi-user.target

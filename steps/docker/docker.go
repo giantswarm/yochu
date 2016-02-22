@@ -16,10 +16,16 @@ type dockerOptions struct {
 	PrivateRegistry []string
 	StorageEngine   string
 	UseIPTables     bool
+	UseTypeNotify   bool
+	DockerExecArgs  []string
 }
 
 const (
 	dockerFolder = "/var/lib/docker"
+
+	dockerDaemonV1_10Arg = "daemon"
+	dockerDaemonArg      = "-d"
+	dockerIccEnabledArg  = "--icc=true"
 
 	btrfsFilesystemType   = "btrfs"
 	overlayFilesystemType = "overlay"
@@ -40,6 +46,8 @@ var (
 	fileMode = os.FileMode(0755)
 	services = []string{serviceName, socketName}
 	paths    = []string{servicePath, socketPath}
+
+	dockerExecDriverOptsArgs = []string{"--exec-opt", "native.cgroupdriver=cgroupfs"}
 )
 
 func Configure(vl func(f string, v ...interface{})) {
@@ -58,7 +66,7 @@ func Setup(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, fc fetchclient.Fet
 		return maskAny(err)
 	}
 
-	err = createDockerService(fsc, privateRegistry, useIPTables)
+	err = createDockerService(fsc, dockerVersion, privateRegistry, useIPTables)
 	if err != nil {
 		return maskAny(err)
 	}
@@ -106,12 +114,16 @@ func Split(s string, d string) (lst []string) {
 	return
 }
 
-func createDockerService(fsc *fsPkg.FsClient, privateRegistry []string, useIPTables bool) error {
+func createDockerService(fsc *fsPkg.FsClient, dockerVersion string, privateRegistry []string, useIPTables bool) error {
 	opts := dockerOptions{
 		PrivateRegistry: privateRegistry,
 		StorageEngine:   getStorageEngine(dockerFolder),
 		UseIPTables:     useIPTables,
+		DockerExecArgs:  make([]string, 0),
 	}
+
+	options := addVersionSpecificArguments(&opts, dockerVersion)
+	opts = *options
 
 	b, err := templates.Render(serviceTemplate, opts)
 	if err != nil {
@@ -123,6 +135,21 @@ func createDockerService(fsc *fsPkg.FsClient, privateRegistry []string, useIPTab
 	}
 
 	return nil
+}
+
+func addVersionSpecificArguments(opts *dockerOptions, dockerVersion string) *dockerOptions {
+	opts.DockerExecArgs = append(opts.DockerExecArgs, dockerDaemonArg)
+
+	if normalizeVersion(dockerVersion) >= normalizeVersion("1.9") {
+		opts.UseTypeNotify = true
+		if normalizeVersion(dockerVersion) >= normalizeVersion("1.10") {
+			opts.DockerExecArgs = append(opts.DockerExecArgs, dockerDaemonV1_10Arg)
+			opts.DockerExecArgs = append(opts.DockerExecArgs[:0], opts.DockerExecArgs[1:]...)
+		}
+		opts.DockerExecArgs = append(opts.DockerExecArgs, dockerIccEnabledArg)
+		opts.DockerExecArgs = append(opts.DockerExecArgs, dockerExecDriverOptsArgs...)
+	}
+	return opts
 }
 
 func getStorageEngine(path string) string {
@@ -187,4 +214,32 @@ func Teardown(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, stopDaemon bool
 	}
 
 	return nil
+}
+
+func normalizeVersion(version string) string {
+	const maxByte = 1<<8 - 1
+	vo := make([]byte, 0, len(version)+8)
+	j := -1
+	for i := 0; i < len(version); i++ {
+		b := version[i]
+		if '0' > b || b > '9' {
+			vo = append(vo, b)
+			j = -1
+			continue
+		}
+		if j == -1 {
+			vo = append(vo, 0x00)
+			j = len(vo) - 1
+		}
+		if vo[j] == 1 && vo[j+1] == '0' {
+			vo[j+1] = b
+			continue
+		}
+		if vo[j]+1 > maxByte {
+			vLogger("unable to normalize this version")
+		}
+		vo = append(vo, b)
+		vo[j]++
+	}
+	return string(vo)
 }
