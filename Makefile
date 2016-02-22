@@ -53,7 +53,7 @@ deps: .gobuild .gobuild/bin/go-bindata
 	GOPATH=$(GOPATH) builder go get github.com/coreos/go-systemd/dbus
 
 # build
-$(PROJECT): $(SOURCE) VERSION
+$(PROJECT): $(SOURCE) VERSION $(TEMPLATES)
 		docker run \
 	    --rm \
 	    -v $(shell pwd):/usr/code \
