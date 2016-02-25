@@ -10,7 +10,7 @@ Host operating systems are provisioned with [giantswarm/mayu](http://github.com/
 
 Download the latest release: https://github.com/giantswarm/yochu/releases/latest
 
-Clone the git repository: `git@github.com:giantswarm/yochu.git`
+Clone the git repository: https://github.com/giantswarm/yochu.git
 
 ## Running Yochu
 
