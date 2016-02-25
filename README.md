@@ -8,7 +8,7 @@ Host operating systems are provisioned with [giantswarm/mayu](http://github.com/
 
 ## Getting Yochu
 
-Download the latest binary: https://downloads.giantswarm.io/yochu/0.18.0/yochu
+Download the latest release: https://github.com/giantswarm/yochu/releases/latest
 
 Clone the git repository: `git@github.com:giantswarm/yochu.git`
 
