@@ -15,7 +15,9 @@ import (
 	"github.com/giantswarm/yochu/steps/fleet"
 	"github.com/giantswarm/yochu/steps/ip6tables"
 	"github.com/giantswarm/yochu/steps/iptables"
+	"github.com/giantswarm/yochu/steps/k8s"
 	"github.com/giantswarm/yochu/steps/overlay"
+	"github.com/giantswarm/yochu/steps/rkt"
 	"github.com/giantswarm/yochu/systemd"
 )
 
@@ -28,6 +30,8 @@ const (
 	defaultFleetVersion     = "v0.11.3-gs-2"
 	defaultEtcdVersion      = "v2.1.0-gs-1"
 	defaultDockerVersion    = "1.6.2"
+	defaultRktVersion       = "v1.1"
+	defaultK8sVersion       = "v1.1.8"
 	defaultS3Bucket         = "downloads.giantswarm.io"
 	defaultHTTPEndpoint     = "https://downloads.giantswarm.io"
 	defaultPrivateRegistry  = ""
@@ -47,6 +51,8 @@ var (
 	fleetVersion     string
 	etcdVersion      string
 	dockerVersion    string
+	rktVersion       string
+	k8sVersion       string
 	awsAccessKey     string
 	awsSecretKey     string
 	s3Endpoint       string
@@ -76,6 +82,8 @@ func init() {
 	setupCmd.Flags().StringVarP(&fleetVersion, "fleet-version", "", defaultFleetVersion, "version to use when provisioning fleetd/fleetctl binaries")
 	setupCmd.Flags().StringVarP(&etcdVersion, "etcd-version", "", defaultEtcdVersion, "version to use when provisioning etcd binaries")
 	setupCmd.Flags().StringVarP(&dockerVersion, "docker-version", "", defaultDockerVersion, "version to use when provisioning docker binaries")
+	setupCmd.Flags().StringVarP(&rktVersion, "rkt-version", "", defaultRktVersion, "version to use when provisioning rkt binaries")
+	setupCmd.Flags().StringVarP(&k8sVersion, "k8s-version", "", defaultK8sVersion, "version to use when provisioning k8s binaries")
 	setupCmd.Flags().StringVarP(&awsAccessKey, "aws-access-key", "", "", "AWS access key to use (can also be set via the AWS_ACCESS_KEY_ID env variable)")
 	setupCmd.Flags().StringVarP(&awsSecretKey, "aws-secret-key", "", "", "AWS secret key to use (can also be set via the AWS_SECRET_ACCESS_KEY env variable)")
 	setupCmd.Flags().StringVarP(&s3Endpoint, "s3-endpoint", "", "", "S3 endpoint to use (can also be set via the S3_ENDPOINT env variable)")
@@ -186,6 +194,28 @@ func setupRun(cmd *cobra.Command, args []string) {
 		}
 
 		if err := etcd.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, etcdVersion, startDaemons); err != nil {
+			ExitStderr(mask(err))
+		}
+	}
+
+	// rkt binary
+	if execute(globalFlags.steps, "rkt") {
+		if err := rkt.Teardown(fsClient, overlayMountPoint); err != nil {
+			ExitStderr(mask(err))
+		}
+
+		if err := rkt.Setup(fsClient, fetchClient, overlayMountPoint, rktVersion); err != nil {
+			ExitStderr(mask(err))
+		}
+	}
+
+	// k8s binaries
+	if execute(globalFlags.steps, "k8s") {
+		if err := k8s.Teardown(fsClient, overlayMountPoint); err != nil {
+			ExitStderr(mask(err))
+		}
+
+		if err := k8s.Setup(fsClient, fetchClient, overlayMountPoint, k8sVersion); err != nil {
 			ExitStderr(mask(err))
 		}
 	}

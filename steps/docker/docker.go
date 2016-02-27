@@ -46,8 +46,6 @@ var (
 	fileMode = os.FileMode(0755)
 	services = []string{serviceName, socketName}
 	paths    = []string{servicePath, socketPath}
-
-	dockerExecDriverOptsArgs = []string{"--exec-opt", "native.cgroupdriver=cgroupfs"}
 )
 
 func Configure(vl func(f string, v ...interface{})) {
@@ -147,7 +145,6 @@ func addVersionSpecificArguments(opts *dockerOptions, dockerVersion string) *doc
 			opts.DockerExecArgs = append(opts.DockerExecArgs[:0], opts.DockerExecArgs[1:]...)
 		}
 		opts.DockerExecArgs = append(opts.DockerExecArgs, dockerIccEnabledArg)
-		opts.DockerExecArgs = append(opts.DockerExecArgs, dockerExecDriverOptsArgs...)
 	}
 	return opts
 }
