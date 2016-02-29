@@ -2,7 +2,10 @@
 Description=etcd2
 Conflicts=etcd.service
 
+{{if .UseOverlay}}
+Requires=usr-bin.mount
 After=usr-bin.mount
+{{end}}
 
 [Service]
 User=etcd

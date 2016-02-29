@@ -10,6 +10,7 @@ type dockerOptions struct {
 	PrivateRegistry []string
 	StorageEngine   string
 	UseIPTables     bool
+	UseOverlay      bool
 	UseTypeNotify   bool
 	DockerExecArgs  []string
 }
@@ -47,6 +48,7 @@ func TestDockerServiceRender(t *testing.T) {
 		PrivateRegistry: []string{"private.registry.com"},
 		StorageEngine:   "btrfs",
 		UseIPTables:     true,
+		UseOverlay:      true,
 		UseTypeNotify:   true,
 		DockerExecArgs:  []string{dockerDaemonV1_10Arg, dockerIccEnabledArg},
 	}
