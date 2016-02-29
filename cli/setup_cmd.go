@@ -30,7 +30,7 @@ const (
 	defaultFleetVersion     = "v0.11.3-gs-2"
 	defaultEtcdVersion      = "v2.1.0-gs-1"
 	defaultDockerVersion    = "1.6.2"
-	defaultRktVersion       = "v1.1"
+	defaultRktVersion       = "v1.1.0"
 	defaultK8sVersion       = "v1.1.8"
 	defaultS3Bucket         = "downloads.giantswarm.io"
 	defaultHTTPEndpoint     = "https://downloads.giantswarm.io"
