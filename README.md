@@ -2,7 +2,7 @@
 
 [![Build Status](https://api.travis-ci.org/giantswarm/yochu.svg)](https://travis-ci.org/giantswarm/yochu) [![](https://godoc.org/github.com/giantswarm/yochu?status.svg)](http://godoc.org/github.com/giantswarm/yochu) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
 
-`yochu` provisions already running CoreOS hosts with Docker, `etcd`, `fleet`,`rkt` and `iptables`.
+`yochu` provisions already running CoreOS hosts with Docker, `etcd`, `fleet`,`rkt`, `kubectl` and `iptables`.
 
 Host operating systems are provisioned with [giantswarm/mayu](http://github.com/giantswarm/mayu) on bare metal clusters.
 
@@ -43,7 +43,7 @@ Our custom binaries can be found at:
 - etcdctl: https://downloads.giantswarm.io/etcd/v2.1.0-gs-1/etcdctl
 - fleet: https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetd
 - fleetctl: https://downloads.giantswarm.io/fleet/v0.11.3-gs-2/fleetctl
-- rkt: https://downloads.giantswarm.io/rkt/v1.1/rkt
+- rkt: https://downloads.giantswarm.io/rkt/v1.1.0/rkt
 - kubectl: https://downloads.giantswarm.io/k8s/v1.1.8/kubectl
 
 ## Contact
