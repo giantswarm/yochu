@@ -9,6 +9,10 @@ import (
 	"github.com/giantswarm/yochu/templates"
 )
 
+type etcdOptions struct {
+	UseOverlay bool
+}
+
 var (
 	vLogger = func(f string, v ...interface{}) {}
 
@@ -24,7 +28,7 @@ func Configure(vl func(f string, v ...interface{})) {
 	vLogger = vl
 }
 
-func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClient, distributionPath, etcdVersion string, startDaemon bool) error {
+func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClient, distributionPath, etcdVersion string, startDaemon bool, useOverlay bool) error {
 	vLogger("\n# call etcd.Setup()")
 
 	etcdRaw, err := fc.Get("etcd/" + etcdVersion + "/etcd")
@@ -45,12 +49,8 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClie
 		return maskAny(err)
 	}
 
-	etcdServiceRaw, err := templates.Asset(etcdServiceTemplate)
+	err = createEtcdService(fsc, useOverlay)
 	if err != nil {
-		return maskAny(err)
-	}
-
-	if err := fsc.Write(etcdServicePath, etcdServiceRaw, fileMode); err != nil {
 		return maskAny(err)
 	}
 
@@ -62,6 +62,23 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClie
 		if err := sc.Start(etcdServiceName); err != nil {
 			return maskAny(err)
 		}
+	}
+
+	return nil
+}
+
+func createEtcdService(fsc *fs.FsClient, useOverlay bool) error {
+	opts := etcdOptions{
+		UseOverlay: useOverlay,
+	}
+
+	b, err := templates.Render(etcdServiceTemplate, opts)
+	if err != nil {
+		return maskAny(err)
+	}
+
+	if err := fsc.Write(etcdServicePath, b.Bytes(), fileMode); err != nil {
+		return maskAny(err)
 	}
 
 	return nil

@@ -7,8 +7,10 @@ After=etcd2.service
 Wants=fleet.socket
 After=fleet.socket
 
+{{if .UseOverlay}}
 Requires=usr-bin.mount
 After=usr-bin.mount
+{{end}}
 
 [Service]
 Environment="FLEET_ETCD_REQUEST_TIMEOUT=5" "FLEET_VERBOSITY=0"

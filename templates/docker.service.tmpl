@@ -7,8 +7,10 @@ After=docker.socket
 Requires=docker-tcp.socket
 After=docker-tcp.socket
 
+{{if .UseOverlay}}
 Requires=usr-bin.mount
 After=usr-bin.mount
+{{end}}
 
 [Service]
 {{if .UseTypeNotify}}Type=Notify{{end}}

@@ -9,6 +9,10 @@ import (
 	"github.com/giantswarm/yochu/templates"
 )
 
+type fleetOptions struct {
+	UseOverlay bool
+}
+
 var (
 	vLogger = func(f string, v ...interface{}) {}
 
@@ -24,7 +28,7 @@ func Configure(vl func(f string, v ...interface{})) {
 	vLogger = vl
 }
 
-func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClient, distributionPath, fleetVersion string, startDaemon bool) error {
+func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClient, distributionPath, fleetVersion string, startDaemon bool, useOverlay bool) error {
 	vLogger("\n# call fleet.Setup()")
 
 	fleetdRaw, err := fc.Get("fleet/" + fleetVersion + "/fleetd")
@@ -49,12 +53,8 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClie
 		return maskAny(err)
 	}
 
-	fleetServiceRaw, err := templates.Asset(fleetServiceTemplate)
+	err = createFleetService(fsc, useOverlay)
 	if err != nil {
-		return maskAny(err)
-	}
-
-	if err := fsc.Write(fleetServicePath, fleetServiceRaw, fileMode); err != nil {
 		return maskAny(err)
 	}
 
@@ -66,6 +66,23 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClie
 		if err := sc.Start(fleetServiceName); err != nil {
 			return maskAny(err)
 		}
+	}
+
+	return nil
+}
+
+func createFleetService(fsc *fs.FsClient, useOverlay bool) error {
+	opts := fleetOptions{
+		UseOverlay: useOverlay,
+	}
+
+	b, err := templates.Render(fleetServiceTemplate, opts)
+	if err != nil {
+		return maskAny(err)
+	}
+
+	if err := fsc.Write(fleetServicePath, b.Bytes(), fileMode); err != nil {
+		return maskAny(err)
 	}
 
 	return nil

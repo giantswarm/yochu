@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/giantswarm/yochu/fetchclient"
-	fsPkg "github.com/giantswarm/yochu/fs"
-	systemdPkg "github.com/giantswarm/yochu/systemd"
+	"github.com/giantswarm/yochu/fs"
+	"github.com/giantswarm/yochu/systemd"
 	"github.com/giantswarm/yochu/templates"
 )
 
@@ -16,6 +16,7 @@ type dockerOptions struct {
 	PrivateRegistry []string
 	StorageEngine   string
 	UseIPTables     bool
+	UseOverlay      bool
 	UseTypeNotify   bool
 	DockerExecArgs  []string
 }
@@ -54,8 +55,8 @@ func Configure(vl func(f string, v ...interface{})) {
 	vLogger = vl
 }
 
-func Setup(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, fc fetchclient.FetchClient, distributionPath, dockerVersion string, privateRegistry []string, useIPTables, restartDaemon bool) error {
-	vLogger("\n# call dockerPkg.Setup()")
+func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClient, distributionPath, dockerVersion string, privateRegistry []string, useIPTables, restartDaemon bool, useOverlay bool) error {
+	vLogger("\n# call docker.Setup()")
 
 	dockerRaw, err := fc.Get("docker/" + dockerVersion + "/docker")
 	if err != nil {
@@ -66,7 +67,7 @@ func Setup(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, fc fetchclient.Fet
 		return maskAny(err)
 	}
 
-	err = createDockerService(fsc, dockerVersion, privateRegistry, useIPTables)
+	err = createDockerService(fsc, dockerVersion, privateRegistry, useIPTables, useOverlay)
 	if err != nil {
 		return maskAny(err)
 	}
@@ -98,7 +99,7 @@ func Setup(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, fc fetchclient.Fet
 			// the provisioner is restarted. Then systemd throws an error when starting
 			// docker, even though the only dependency (docker-tcp.socket) does not
 			// fail.
-			if systemdPkg.IsJobDependency(err) {
+			if systemd.IsJobDependency(err) {
 				vLogger(err.Error())
 			} else {
 				return maskAny(err)
@@ -114,11 +115,12 @@ func Split(s string, d string) (lst []string) {
 	return
 }
 
-func createDockerService(fsc *fsPkg.FsClient, dockerVersion string, privateRegistry []string, useIPTables bool) error {
+func createDockerService(fsc *fs.FsClient, dockerVersion string, privateRegistry []string, useIPTables bool, useOverlay bool) error {
 	opts := dockerOptions{
 		PrivateRegistry: privateRegistry,
 		StorageEngine:   getStorageEngine(dockerFolder),
 		UseIPTables:     useIPTables,
+		UseOverlay:      useOverlay,
 		DockerExecArgs:  make([]string, 0),
 	}
 
@@ -184,8 +186,8 @@ func getStorageEngine(path string) string {
 	panic("/proc/mounts doesnt have a rootfs?")
 }
 
-func Teardown(fsc *fsPkg.FsClient, sc *systemdPkg.SystemdClient, stopDaemon bool) error {
-	vLogger("\n# call dockerPkg.Teardown()")
+func Teardown(fsc *fs.FsClient, sc *systemd.SystemdClient, stopDaemon bool) error {
+	vLogger("\n# call docker.Teardown()")
 
 	for _, s := range services {
 		exists, err := sc.Exists(s)

@@ -129,7 +129,8 @@ func setupRun(cmd *cobra.Command, args []string) {
 	}
 
 	// overlay mount service
-	if execute(globalFlags.steps, "overlay") {
+	useOverlay := execute(globalFlags.steps, "overlay")
+	if useOverlay {
 		if err := overlay.Teardown(fsClient, systemdClient, distributionPath, overlayWorkdir, overlayMountPoint); err != nil {
 			ExitStderr(mask(err))
 		}
@@ -171,7 +172,7 @@ func setupRun(cmd *cobra.Command, args []string) {
 
 		// !useIPTables is used, because when the iptables step is enabled, we want
 		// --iptables=false for the docker daemon.
-		if err := docker.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, dockerVersion, privateRegistry, !useIPTables, startDaemons); err != nil {
+		if err := docker.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, dockerVersion, privateRegistry, !useIPTables, startDaemons, useOverlay); err != nil {
 			ExitStderr(mask(err))
 		}
 	}
@@ -182,7 +183,7 @@ func setupRun(cmd *cobra.Command, args []string) {
 			ExitStderr(mask(err))
 		}
 
-		if err := fleet.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, fleetVersion, startDaemons); err != nil {
+		if err := fleet.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, fleetVersion, startDaemons, useOverlay); err != nil {
 			ExitStderr(mask(err))
 		}
 	}
@@ -193,7 +194,7 @@ func setupRun(cmd *cobra.Command, args []string) {
 			ExitStderr(mask(err))
 		}
 
-		if err := etcd.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, etcdVersion, startDaemons); err != nil {
+		if err := etcd.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, etcdVersion, startDaemons, useOverlay); err != nil {
 			ExitStderr(mask(err))
 		}
 	}
