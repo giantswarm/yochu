@@ -14,7 +14,9 @@ import (
 	fleetPkg "github.com/giantswarm/yochu/steps/fleet"
 	ip6tablesPkg "github.com/giantswarm/yochu/steps/ip6tables"
 	iptablesPkg "github.com/giantswarm/yochu/steps/iptables"
+	k8sPkg "github.com/giantswarm/yochu/steps/k8s"
 	overlay "github.com/giantswarm/yochu/steps/overlay"
+	rktPkg "github.com/giantswarm/yochu/steps/rkt"
 	systemdPkg "github.com/giantswarm/yochu/systemd"
 )
 
@@ -49,6 +51,8 @@ func init() {
 	etcdPkg.Configure(Verbosef)
 	distribution.Configure(Verbosef)
 	overlay.Configure(Verbosef)
+	rktPkg.Configure(Verbosef)
+	k8sPkg.Configure(Verbosef)
 
 	yochuCmd.PersistentFlags().BoolVarP(&globalFlags.debug, "debug", "d", false, "print debug output")
 	yochuCmd.PersistentFlags().BoolVarP(&globalFlags.verbose, "verbose", "v", false, "print verbose output")

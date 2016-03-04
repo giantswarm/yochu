@@ -10,7 +10,9 @@ import (
 	fleetPkg "github.com/giantswarm/yochu/steps/fleet"
 	ip6tablesPkg "github.com/giantswarm/yochu/steps/ip6tables"
 	iptablesPkg "github.com/giantswarm/yochu/steps/iptables"
+	k8sPkg "github.com/giantswarm/yochu/steps/k8s"
 	"github.com/giantswarm/yochu/steps/overlay"
+	rktPkg "github.com/giantswarm/yochu/steps/rkt"
 	systemdPkg "github.com/giantswarm/yochu/systemd"
 )
 
@@ -49,6 +51,20 @@ func teardownRun(cmd *cobra.Command, args []string) {
 	// ip6tables
 	if execute(globalFlags.steps, "ip6tables") {
 		if err := ip6tablesPkg.Teardown(fs, systemd); err != nil {
+			ExitStderr(err)
+		}
+	}
+
+	// k8s binaries
+	if execute(globalFlags.steps, "k8s") {
+		if err := k8sPkg.Teardown(fs, overlayMountPoint); err != nil {
+			ExitStderr(err)
+		}
+	}
+
+	// rkt binaries
+	if execute(globalFlags.steps, "rkt") {
+		if err := rktPkg.Teardown(fs, overlayMountPoint); err != nil {
 			ExitStderr(err)
 		}
 	}
