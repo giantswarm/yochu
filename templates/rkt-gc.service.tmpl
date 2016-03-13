@@ -1,6 +1,11 @@
 [Unit]
 Description=Garbage Collection for rkt
 
+{{if .UseOverlay}}
+Requires=usr-bin.mount
+After=usr-bin.mount
+{{end}}
+
 [Service]
 Environment=GRACE_PERIOD=24h
 Type=oneshot
