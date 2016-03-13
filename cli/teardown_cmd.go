@@ -64,7 +64,7 @@ func teardownRun(cmd *cobra.Command, args []string) {
 
 	// rkt binaries
 	if execute(globalFlags.steps, "rkt") {
-		if err := rktPkg.Teardown(fs, overlayMountPoint); err != nil {
+		if err := rktPkg.Teardown(fs, systemd, overlayMountPoint, stopDaemons); err != nil {
 			ExitStderr(err)
 		}
 	}

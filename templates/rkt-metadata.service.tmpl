@@ -1,0 +1,16 @@
+[Unit]
+Description=rkt metadata service
+Documentation=http://github.com/coreos/rkt
+After=network.target rkt-metadata.socket
+Requires=rkt-metadata.socket
+
+{{if .UseOverlay}}
+Requires=usr-bin.mount
+After=usr-bin.mount
+{{end}}
+
+[Service]
+ExecStart=/usr/bin/rkt metadata-service
+
+[Install]
+WantedBy=multi-user.target
