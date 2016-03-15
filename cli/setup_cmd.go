@@ -201,11 +201,11 @@ func setupRun(cmd *cobra.Command, args []string) {
 
 	// rkt binary
 	if execute(globalFlags.steps, "rkt") {
-		if err := rkt.Teardown(fsClient, overlayMountPoint); err != nil {
+		if err := rkt.Teardown(fsClient, systemdClient, overlayMountPoint, stopDaemons); err != nil {
 			ExitStderr(mask(err))
 		}
 
-		if err := rkt.Setup(fsClient, fetchClient, overlayMountPoint, rktVersion); err != nil {
+		if err := rkt.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, rktVersion, startDaemons, useOverlay); err != nil {
 			ExitStderr(mask(err))
 		}
 	}
