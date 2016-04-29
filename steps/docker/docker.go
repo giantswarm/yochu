@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/coreos/go-semver/semver"
+
 	"github.com/giantswarm/yochu/fetchclient"
 	"github.com/giantswarm/yochu/fs"
 	"github.com/giantswarm/yochu/systemd"
@@ -58,13 +60,36 @@ func Configure(vl func(f string, v ...interface{})) {
 func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, fc fetchclient.FetchClient, distributionPath, dockerVersion string, privateRegistry []string, useIPTables, restartDaemon bool, useOverlay bool) error {
 	vLogger("\n# call docker.Setup()")
 
-	dockerRaw, err := fc.Get("docker/" + dockerVersion + "/docker")
+	// This is the version where Docker split into multiple binaries.
+	dockerMultipleBinariesVersion, _ := semver.NewVersion("1.11.0")
+
+	semverDockerVersion, err := semver.NewVersion(dockerVersion)
 	if err != nil {
 		return maskAny(err)
 	}
 
-	if err := fsc.Write(distributionPath+"/docker", dockerRaw, fileMode); err != nil {
-		return maskAny(err)
+	dockerBinariesToGetAndWrite := []string{}
+	if semverDockerVersion.LessThan(*dockerMultipleBinariesVersion) {
+		dockerBinariesToGetAndWrite = []string{"docker"}
+	} else {
+		dockerBinariesToGetAndWrite = []string{
+			"docker",
+			"docker-containerd",
+			"docker-containerd-ctr",
+			"docker-containerd-shim",
+			"docker-runc",
+		}
+	}
+
+	for _, dockerBinaryName := range dockerBinariesToGetAndWrite {
+		dockerRaw, err := fc.Get("docker/" + dockerVersion + "/" + dockerBinaryName)
+		if err != nil {
+			return maskAny(err)
+		}
+
+		if err := fsc.Write(distributionPath+"/"+dockerBinaryName, dockerRaw, fileMode); err != nil {
+			return maskAny(err)
+		}
 	}
 
 	err = createDockerService(fsc, dockerVersion, privateRegistry, useIPTables, useOverlay)
