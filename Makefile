@@ -51,6 +51,7 @@ deps: .gobuild .gobuild/bin/go-bindata
 	GOPATH=$(GOPATH) builder go get github.com/juju/errgo
 	GOPATH=$(GOPATH) builder go get github.com/spf13/cobra
 	GOPATH=$(GOPATH) builder go get github.com/coreos/go-systemd/dbus
+	GOPATH=$(GOPATH) builder go get github.com/coreos/go-semver
 
 # build
 $(PROJECT): $(SOURCE) VERSION $(TEMPLATES)
