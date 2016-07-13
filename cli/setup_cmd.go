@@ -93,6 +93,9 @@ func init() {
 	setupCmd.Flags().StringVarP(&httpEndpoint, "http-endpoint", "", defaultHTTPEndpoint, "HTTP endpoint to use")
 	setupCmd.Flags().BoolVarP(&startDaemons, "start-daemons", "", true, "start daemons after deploying")
 	setupCmd.Flags().BoolVarP(&stopDaemons, "stop-daemons", "", true, "stop daemons before deploying")
+
+	// This cli argument is used within newer docker versions to avoid setting our rules.
+	setupCmd.Flags().BoolVarP(&useDockerIptableRules, "use-docker-rules", "", true, "set our docker iptables rules")
 }
 
 func setupRun(cmd *cobra.Command, args []string) {
