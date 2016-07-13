@@ -9,9 +9,10 @@ import (
 )
 
 type iptablesOptions struct {
-	Gateway      string
-	Subnet       string
-	DockerSubnet string
+	Gateway        string
+	Subnet         string
+	DockerSubnet   string
+	UseDockerRules bool
 }
 
 var (
@@ -38,14 +39,14 @@ func Configure(vl func(f string, v ...interface{})) {
 	vLogger = vl
 }
 
-func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, subnet, dockerSubnet, gateway string) error {
+func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, subnet, dockerSubnet, gateway string, useDockerRules bool) error {
 	vLogger("\n# call iptables.Setup()")
 
 	if err := setupNetfilter(fsc); err != nil {
 		return maskAny(err)
 	}
 
-	if err := setupRules(fsc, subnet, dockerSubnet, gateway); err != nil {
+	if err := setupRules(fsc, subnet, dockerSubnet, gateway, useDockerRules); err != nil {
 		return maskAny(err)
 	}
 
@@ -66,11 +67,12 @@ func Setup(fsc *fs.FsClient, sc *systemd.SystemdClient, subnet, dockerSubnet, ga
 	return nil
 }
 
-func RenderRulesFromTemplate(subnet, dockerSubnet, gateway string) ([]byte, error) {
+func RenderRulesFromTemplate(subnet, dockerSubnet, gateway string, useDockerRules bool) ([]byte, error) {
 	opts := iptablesOptions{
-		Subnet:       subnet,
-		DockerSubnet: dockerSubnet,
-		Gateway:      gateway,
+		Subnet:         subnet,
+		DockerSubnet:   dockerSubnet,
+		Gateway:        gateway,
+		UseDockerRules: useDockerRules,
 	}
 
 	b, err := templates.Render(rulesTemplate, opts)
@@ -124,8 +126,8 @@ func setupNetfilter(fsc *fs.FsClient) error {
 	return nil
 }
 
-func setupRules(fsc *fs.FsClient, subnet, dockerSubnet, gateway string) error {
-	rulesBytes, err := RenderRulesFromTemplate(subnet, dockerSubnet, gateway)
+func setupRules(fsc *fs.FsClient, subnet, dockerSubnet, gateway string, useDockerRules bool) error {
+	rulesBytes, err := RenderRulesFromTemplate(subnet, dockerSubnet, gateway, useDockerRules)
 	if err != nil {
 		return maskAny(err)
 	}

@@ -44,6 +44,8 @@ var (
 	dockerSubnet string
 	gateway      string
 
+	useDockerIptableRules bool
+
 	privateRegistry []string
 
 	distributionPath string
@@ -147,7 +149,7 @@ func setupRun(cmd *cobra.Command, args []string) {
 			ExitStderr(mask(err))
 		}
 
-		if err := iptables.Setup(fsClient, systemdClient, subnet, dockerSubnet, gateway); err != nil {
+		if err := iptables.Setup(fsClient, systemdClient, subnet, dockerSubnet, gateway, useDockerIptableRules); err != nil {
 			ExitStderr(mask(err))
 		}
 	}

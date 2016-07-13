@@ -10,7 +10,7 @@ COMMIT
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
 :OUTPUT DROP [0:0]
-:DOCKER - [0:0]
+{{if .UseDockerRules}}:DOCKER - [0:0]
 -A INPUT -i lo -j ACCEPT
 -A INPUT -d {{.Subnet}} ! -i docker0 -j ACCEPT
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
@@ -20,5 +20,5 @@ COMMIT
 -A FORWARD -s {{.DockerSubnet}} -d {{.Subnet}} -j DROP
 -A FORWARD -s {{.DockerSubnet}} ! -o docker0 -j ACCEPT
 -A FORWARD -o docker0 -j DOCKER
--A OUTPUT -j ACCEPT
+-A OUTPUT -j ACCEPT{{end}}
 COMMIT
