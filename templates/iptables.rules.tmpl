@@ -23,9 +23,9 @@ COMMIT
 -A OUTPUT -j ACCEPT
 {{else}}
 -A INPUT -i lo -j ACCEPT
--A INPUT -d {{.Subnet}} ! -i docker0 -j ACCEPT
+-A INPUT -d {{.Subnet}} -j ACCEPT
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
--A FORWARD -s {{.DockerSubnet}} ! -o docker0 -j ACCEPT
+-A FORWARD -s {{.DockerSubnet}} -j ACCEPT
 -A OUTPUT -j ACCEPT
 {{end}}
 COMMIT
