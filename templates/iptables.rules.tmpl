@@ -3,14 +3,14 @@
 :INPUT ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
--A POSTROUTING -s {{.DockerSubnet}} ! -d {{.DockerSubnet}} -j MASQUERADE
+{{if .UseDockerRules}}-A POSTROUTING -s {{.DockerSubnet}} ! -d {{.DockerSubnet}} -j MASQUERADE{{end}}
 COMMIT
 
 *filter
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
 :OUTPUT DROP [0:0]
-:DOCKER - [0:0]
+{{if .UseDockerRules}}:DOCKER - [0:0]
 -A INPUT -i lo -j ACCEPT
 -A INPUT -d {{.Subnet}} ! -i docker0 -j ACCEPT
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
@@ -21,4 +21,11 @@ COMMIT
 -A FORWARD -s {{.DockerSubnet}} ! -o docker0 -j ACCEPT
 -A FORWARD -o docker0 -j DOCKER
 -A OUTPUT -j ACCEPT
+{{else}}
+-A INPUT -i lo -j ACCEPT
+-A INPUT -d {{.Subnet}} -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -s {{.DockerSubnet}} -j ACCEPT
+-A OUTPUT -j ACCEPT
+{{end}}
 COMMIT
