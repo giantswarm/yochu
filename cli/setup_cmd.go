@@ -177,9 +177,7 @@ func setupRun(cmd *cobra.Command, args []string) {
 
 		// !useIPTables is used, because when the iptables step is enabled, we want
 		// --iptables=false for the docker daemon.
-		enableDockerIptables := !useDockerIptableRules
-
-		if err := docker.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, dockerVersion, privateRegistry, enableDockerIptables, startDaemons, useOverlay); err != nil {
+		if err := docker.Setup(fsClient, systemdClient, fetchClient, overlayMountPoint, dockerVersion, privateRegistry, !useDockerIptableRules, startDaemons, useOverlay); err != nil {
 			ExitStderr(mask(err))
 		}
 	}
