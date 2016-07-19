@@ -75,7 +75,7 @@ func NewYochuCmd(version string) *cobra.Command {
 }
 
 func yochuRun(cmd *cobra.Command, args []string) {
-	cmd.Help()
+	cmd.HelpFunc()(cmd, nil)
 }
 
 // Check if the given step is listed in steps. steps is a comma separated list
