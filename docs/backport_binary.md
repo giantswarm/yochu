@@ -22,8 +22,8 @@ See:
  * https://github.com/giantswarm/yochu/blob/master/steps/fleet/fleet.go#L34
 
 Since naming is hard here a short explanation of the steps.
-- Step `distribution` step prepares the readonly file system on CoreOS by
-  creating certain directories.
+- Step `distribution` prepares the directory in which binaries will be
+  downloaded to within the readonly file system on CoreOS.
 - Step `overlay` creates the overlay mount at `/usr/bin`. So in the end your
   custom `fleetd` will be available through `/usr/bin/fleetd`.
 - Step `fleet` downloads the fleet binary provided by `--fleet-version`. To
